@@ -1,0 +1,69 @@
+name: "open-inventory"
+services:
+  web:
+    environment:
+      - SERVICE_TYPE=web
+    container_name: 'api'
+    build: .
+    ports:
+      - "8000:8000"
+    networks:
+      - valkey_net
+    volumes:
+      - static_volume:/code/staticfiles
+      - .:/code
+      - media_volume:/code/media
+
+  valkey:
+    build:
+      context: .
+      dockerfile: Dockerfile.valkey
+    container_name: 'valkey'
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    hostname: valkey
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    networks:
+      - valkey_net
+
+  celery-worker:
+    environment:
+      - SERVICE_TYPE=celery-worker
+    build: .
+    container_name: 'celery-worker'
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - valkey_net
+    volumes:
+      - .:/code
+      - media_volume:/code/media
+
+  celery-beat:
+    environment:
+      - SERVICE_TYPE=celery-beat
+    build: .
+    container_name: 'celery-beat'
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - valkey_net
+
+networks:
+  valkey_net:
+    driver: bridge
+
+
+volumes:
+  valkey_data:
+  static_volume:
+  media_volume:

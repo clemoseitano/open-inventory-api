@@ -1,0 +1,14 @@
+# Use the official Valkey image from Docker Hub
+FROM valkey/valkey:latest
+
+# Optional: expose the default Valkey port
+EXPOSE 6379
+
+# Optional: mount a custom config file if needed
+# COPY valkey.conf /usr/local/etc/valkey/valkey.conf
+
+# Optional: run with custom config
+# CMD ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
+
+# Default command (uses built-in config)
+CMD ["valkey-server"]

@@ -1,0 +1,8 @@
+*/*pycache*/
+*.env
+**/__pycache__/
+**/.idea/
+**/.ibk/
+.DS_Store
+**/static/
+**/media/

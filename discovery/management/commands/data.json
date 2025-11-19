@@ -1,0 +1,6 @@
+{
+  "local": {
+    "S3_BUCKET_NAME": "open-inventory-dev-bucket",
+    "DOMAIN": "http://localhost:8000"
+  }
+}

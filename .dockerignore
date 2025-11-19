@@ -1,0 +1,11 @@
+.venv
+.git
+.gitignore
+.env
+/static/
+.env.*
+*.env
+/*env*/
+/.*env*/
+# Un-ignore .docker.env for local setups
+!.docker.env
