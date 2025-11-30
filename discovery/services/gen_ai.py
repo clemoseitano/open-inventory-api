@@ -68,6 +68,8 @@ import re
 
 
 def infer_product_details(_ocr_data):
+    if _orc_data.get("reconstructed_text", "") == "":
+        return None
     client = instructor.patch(OpenAI(api_key=os.environ.get("LLM_API_KEY")))
 
     cleaned = re.sub(r"\s+", " ", str(_ocr_data)).strip()

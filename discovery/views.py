@@ -173,6 +173,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class ProcessImagesView(APIView):
+    permission_classes = [permissions.AllowAny]
     def post(self, request, *args, **kwargs):
         """
         Accepts multiple image uploads, saves them to a shared volume,
@@ -229,6 +230,7 @@ class ProcessImagesView(APIView):
 
 
 class ProcessTextView(APIView):
+    permission_classes = [permissions.AllowAny]
     def post(self, request, *args, **kwargs):
         structured_text = request.data.get("structured_text")
         if not structured_text:

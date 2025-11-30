@@ -21,7 +21,9 @@ def process_product_images(image_paths: list):
     # 3. Gen AI inference
     product_data = infer_product_details(reconstructed_text)
     print("PRODUCT DATA", product_data)
-
+    if not product_data:
+        print("Product data is null or empty")
+        return None
     # 4. Save to database
     metadata = product_data.pop("metadata", {})
     product = Product.objects.create(**product_data)
@@ -37,7 +39,9 @@ def process_structured_text(structured_text: str):
     """
     # 1. Gen AI inference
     product_data = infer_product_details(structured_text)
-
+    if not product_data:
+        print("Product data is null or empty text")
+        return None
     # 2. Save to database
     metadata = product_data.pop("metadata", {})
     product = Product.objects.create(**product_data)
