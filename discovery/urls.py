@@ -16,7 +16,7 @@ Including another URLconf
 
 from django.urls import path, include
 
-from discovery.views import ProcessImagesView, ProcessTextView
+from discovery.views import ProcessImagesView, ProcessTextView, CheckResultView
 from discovery import views as api_views
 from discovery.views import ProductViewSet
 
@@ -47,4 +47,5 @@ urlpatterns = [
     path("products/<int:pk>/", product_detail, name="product-detail"),
     path("process-images/", ProcessImagesView.as_view(), name="process-images"),
     path("process-text/", ProcessTextView.as_view(), name="process-text"),
+    path("inference-response/<str:task_id>", CheckResultView.as_view(), name="inference-response"),
 ]

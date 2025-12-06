@@ -1,4 +1,6 @@
 from celery import shared_task
+
+from discovery.serializers import ProductSerializer
 from discovery.services.ocr import process_image_with_ocr
 from discovery.services.reconstruction import reconstruct_llm_input
 from discovery.services.gen_ai import infer_product_details
@@ -28,8 +30,9 @@ def process_product_images(image_paths: list):
     metadata = product_data.pop("metadata", {})
     product = Product.objects.create(**product_data)
     ProductMetadata.objects.create(product=product, **metadata)
+    product.refresh_from_db()
 
-    return product.id
+    return ProductSerializer(product).data
 
 
 @shared_task
@@ -47,7 +50,9 @@ def process_structured_text(structured_text: str):
     product = Product.objects.create(**product_data)
     ProductMetadata.objects.create(product=product, **metadata)
 
-    return product.id
+    product.refresh_from_db()
+
+    return ProductSerializer(product).data
 
 
 """curl 'https://verifypermit.fdaghana.gov.gh/publicsearch?draw=1&columns%5B0%5D%5Bdata%5D=DT_RowIndex&columns%5B0%5D%5Bsearchable%5D=false&columns%5B1%5D%5Bdata%5D=client_name&columns%5B1%5D%5Bname%5D=tbl_client_details.client_name&columns%5B2%5D%5Bdata%5D=product_name&columns%5B3%5D%5Bdata%5D=product_category&columns%5B4%5D%5Bdata%5D=expiry_date&columns%5B5%5D%5Bdata%5D=status&columns%5B5%5D%5Bname%5D=tbl_products_details.status&columns%5B6%5D%5Bdata%5D=action&columns%5B6%5D%5Bsearchable%5D=false&columns%5B6%5D%5Borderable%5D=false&order%5B0%5D%5Bcolumn%5D=1&order%5B0%5D%5Bdir%5D=desc&start=0&length=25&search%5Bvalue%5D=&_=1763133604095' \

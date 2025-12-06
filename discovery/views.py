@@ -5,6 +5,7 @@ import json
 import uuid
 from pathlib import Path
 
+from celery.result import AsyncResult
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.auth import authenticate, password_validation
@@ -36,6 +37,7 @@ from discovery.serializers import (
 )
 from discovery.utils import account_activation_token, password_reset_token
 from discovery.tasks import process_product_images, process_structured_text
+from service.celery import app
 
 
 class RegistrationView(generics.CreateAPIView):
@@ -240,3 +242,16 @@ class ProcessTextView(APIView):
 
         task = process_structured_text.delay(structured_text)
         return Response({"task_id": task.id}, status=HTTP_202_ACCEPTED)
+
+
+class CheckResultView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request, task_id, *args, **kwargs):
+        res = AsyncResult(task_id, app=app)
+
+        if res.state == 'SUCCESS':
+            return Response({'status': 'success', 'result': res.result}, status=status.HTTP_200_OK)
+        elif res.state == 'FAILURE':
+            return Response({'status': 'error', 'error': str(res.result)}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'pending'}, status=status.HTTP_200_OK)

@@ -1,6 +1,5 @@
-# {{ project_name }}
-Spin up a new project with this template
-`django-admin startproject --template ./service-template your-service-name .`
+# Open Inventory Product Discovery API
+*This project contains some LLM generated code*
 ## Getting started
 
 This is a basic django project with django-rest-framework.

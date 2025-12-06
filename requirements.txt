@@ -41,6 +41,7 @@ celery==5.5.3
     # via
     #   -r requirements.in
     #   django-celery-beat
+    #   django-celery-results
 certifi==2025.10.5
     # via
     #   httpcore
@@ -93,11 +94,14 @@ django==5.2.7
     # via
     #   -r requirements.in
     #   django-celery-beat
+    #   django-celery-results
     #   django-oauth-toolkit
     #   django-timezone-field
     #   djangorestframework
     #   graphene-django
 django-celery-beat==2.8.1
+    # via -r requirements.in
+django-celery-results==2.6.0
     # via -r requirements.in
 django-oauth-toolkit==3.1.0
     # via -r requirements.in

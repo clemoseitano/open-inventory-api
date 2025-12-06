@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "discovery",
     "django_celery_beat",
+    "django_celery_results",
 ]
 
 REST_FRAMEWORK = {
