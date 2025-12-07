@@ -36,7 +36,9 @@ def resize_image(file_path):
             # 4. Save to buffer
             output = io.BytesIO()
             # Quality 85 is a good balance for OCR (high detail, lower file size)
-            img.save(output, format="JPEG", quality=85)
+            # subsampling=0:  Forces 4:4:4 (No color compression).
+            # CRITICAL for sharp text (OCR), especially red text.
+            img.save(output, format="JPEG", quality=85, subsampling=0)
             output.seek(0)
 
             # 5. Write to absolute /tmp folder
