@@ -58,10 +58,7 @@ class SimplifiedIDGenerator:
             self.last_timestamp = timestamp
 
             # Assemble the final 64-bit ID by combining the timestamp and sequence
-            new_id = (
-                    ((timestamp - self.EPOCH) << self.TIMESTAMP_SHIFT) |
-                    self.sequence
-            )
+            new_id = ((timestamp - self.EPOCH) << self.TIMESTAMP_SHIFT) | self.sequence
             return new_id
 
 

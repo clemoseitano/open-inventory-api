@@ -47,5 +47,9 @@ urlpatterns = [
     path("products/<int:pk>/", product_detail, name="product-detail"),
     path("process-images/", ProcessImagesView.as_view(), name="process-images"),
     path("process-text/", ProcessTextView.as_view(), name="process-text"),
-    path("inference-response/<str:task_id>", CheckResultView.as_view(), name="inference-response"),
+    path(
+        "inference-response/<str:task_id>",
+        CheckResultView.as_view(),
+        name="inference-response",
+    ),
 ]

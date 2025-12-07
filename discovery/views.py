@@ -176,6 +176,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 class ProcessImagesView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
         """
         Accepts multiple image uploads, saves them to a shared volume,
@@ -233,6 +234,7 @@ class ProcessImagesView(APIView):
 
 class ProcessTextView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
         structured_text = request.data.get("structured_text")
         if not structured_text:
@@ -246,12 +248,17 @@ class ProcessTextView(APIView):
 
 class CheckResultView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def get(self, request, task_id, *args, **kwargs):
         res = AsyncResult(task_id, app=app)
 
-        if res.state == 'SUCCESS':
-            return Response({'status': 'success', 'result': res.result}, status=status.HTTP_200_OK)
-        elif res.state == 'FAILURE':
-            return Response({'status': 'error', 'error': str(res.result)}, status=status.HTTP_200_OK)
+        if res.state == "SUCCESS":
+            return Response(
+                {"status": "success", "result": res.result}, status=status.HTTP_200_OK
+            )
+        elif res.state == "FAILURE":
+            return Response(
+                {"status": "error", "error": str(res.result)}, status=status.HTTP_200_OK
+            )
         else:
-            return Response({'status': 'pending'}, status=status.HTTP_200_OK)
+            return Response({"status": "pending"}, status=status.HTTP_200_OK)

@@ -1,5 +1,8 @@
 import json
 import os
+from openai import OpenAI
+import instructor
+import re
 
 from discovery.llm_response_models import ProductInfo
 
@@ -62,13 +65,9 @@ prompt = {
     """,
 }
 
-from openai import OpenAI
-import instructor
-import re
-
 
 def infer_product_details(_ocr_data):
-    if _orc_data.get("reconstructed_text", "") == "":
+    if _ocr_data.get("reconstructed_text", "") == "":
         return None
     client = instructor.patch(OpenAI(api_key=os.environ.get("LLM_API_KEY")))
 

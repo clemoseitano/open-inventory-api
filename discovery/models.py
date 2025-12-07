@@ -44,12 +44,12 @@ class AdminConfiguration(BaseModel):
 class Product(BaseModel):
     name = models.TextField()
     description = models.TextField(null=True, blank=True, default=None)
-    category = models.CharField(max_length=255, null=True, blank=True,default=None)
-    manufacturer = models.TextField(null=True, blank=True,default=None)
-    production_date = models.DateField(null=True, blank=True,default=None)
-    expiry_date = models.DateField(null=True, blank=True,default=None)
-    distributor = models.TextField(null=True, blank=True,default=None)
-    barcode = models.CharField(max_length=100, null=True, blank=True,default=None)
+    category = models.CharField(max_length=255, null=True, blank=True, default=None)
+    manufacturer = models.TextField(null=True, blank=True, default=None)
+    production_date = models.DateField(null=True, blank=True, default=None)
+    expiry_date = models.DateField(null=True, blank=True, default=None)
+    distributor = models.TextField(null=True, blank=True, default=None)
+    barcode = models.CharField(max_length=100, null=True, blank=True, default=None)
 
     def __str__(self):
         return self.name
@@ -59,10 +59,12 @@ class ProductMetadata(BaseModel):
     product = models.OneToOneField(
         Product, on_delete=models.CASCADE, related_name="metadata"
     )
-    net_weight = models.CharField(max_length=50, null=True, blank=True,default=None)
-    volume = models.CharField(max_length=50, null=True, blank=True,default=None)
-    quantity_in_package = models.PositiveIntegerField(null=True, blank=True,default=None)
-    size = models.CharField(max_length=50, null=True, blank=True,default=None)
+    net_weight = models.CharField(max_length=50, null=True, blank=True, default=None)
+    volume = models.CharField(max_length=50, null=True, blank=True, default=None)
+    quantity_in_package = models.PositiveIntegerField(
+        null=True, blank=True, default=None
+    )
+    size = models.CharField(max_length=50, null=True, blank=True, default=None)
     part_number = models.CharField(
         max_length=100,
         null=True,
@@ -71,7 +73,10 @@ class ProductMetadata(BaseModel):
         help_text="Part number of the product, OEM or aftermarket. Stored as text to support alphanumeric values.",
     )
     age_rating = models.PositiveIntegerField(
-        null=True, blank=True, default=None,help_text="Age rating of the product (e.g., 18 for 18+)."
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Age rating of the product (e.g., 18 for 18+).",
     )
     additional_info = models.JSONField(
         default=dict,
@@ -79,7 +84,7 @@ class ProductMetadata(BaseModel):
         blank=True,
         help_text="A dictionary for any other relevant metadata.",
     )
-    country_of_origin = models.TextField(null=True, blank=True,default=None)
+    country_of_origin = models.TextField(null=True, blank=True, default=None)
     ingredients = models.JSONField(default=list, null=True, blank=True)
     materials = models.JSONField(default=list, null=True, blank=True)
     warnings = models.JSONField(default=list, null=True, blank=True)

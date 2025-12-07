@@ -59,7 +59,7 @@ class Command(BaseCommand):
                     "category": item.get("product_category", "Uncategorized"),
                     "manufacturer": item.get("manufacturer"),
                     "production_date": None,  # Not available in the source data
-                    "expiry_date": None, #item.get("expiry_date"),
+                    "expiry_date": None,  # item.get("expiry_date"),
                     "distributor": item.get(
                         "representative_company_local_agent_applicant"
                     ),
@@ -91,7 +91,9 @@ class Command(BaseCommand):
                 product_obj, created = Product.objects.update_or_create(
                     name=product_data["name"], defaults=product_data
                 )
-                print(f"Product ID: {product_obj.id} FDA ID: {product_id} Created: {created}")
+                print(
+                    f"Product ID: {product_obj.id} FDA ID: {product_id} Created: {created}"
+                )
 
                 # Create or update the associated metadata
                 ProductMetadata.objects.update_or_create(
