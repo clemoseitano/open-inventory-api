@@ -60,16 +60,19 @@ def resize_image(file_path):
 
 
 @shared_task
-def process_product_images(_image_paths: list):
+def process_product_images(_image_paths: list, resize=False):
     """
     Celery task to perform the full OCR and AI inference pipeline.
     """
     image_paths = []
     # 0. Scale down images
-    for image_path in _image_paths:
-        result = resize_image(image_path)
-        if result:
-            image_paths.append(result)
+    if resize:
+        for image_path in _image_paths:
+            result = resize_image(image_path)
+            if result:
+                image_paths.append(result)
+    else:
+        image_paths = _image_paths
     # 1. OCR from images
     raw_ocr_output = process_image_with_ocr(images=image_paths)
     print("RAW OCR OUTPUT", raw_ocr_output)
