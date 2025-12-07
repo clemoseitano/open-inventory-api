@@ -44,6 +44,7 @@ RUN mkdir -p /code/media
 # Create a directory for PaddleOCR models to ensure the user can write to it
 # Paddle defaults to ~/.paddleocr, so we create it in the user's home
 RUN mkdir -p /home/app_user/.paddleocr
+RUN mkdir -p /home/app_user/.paddlex
 
 # Set ownership. 
 # We give app_user ownership of staticfiles, media, and the home directory

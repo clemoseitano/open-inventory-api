@@ -67,11 +67,6 @@ prompt = {
 
 
 def infer_product_details(_ocr_data):
-    print(type(_ocr_data))
-    print(_ocr_data)
-    _ocr_data = json.loads(_ocr_data) if isinstance(_ocr_data, str) else _ocr_data
-    if _ocr_data.get("reconstructed_text", "") == "":
-        return None
     client = instructor.patch(OpenAI(api_key=os.environ.get("LLM_API_KEY")))
 
     cleaned = re.sub(r"\s+", " ", str(_ocr_data)).strip()

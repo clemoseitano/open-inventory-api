@@ -1,6 +1,6 @@
 name: "open-inventory"
 services:
-  web:
+  api:
     environment:
       - SERVICE_TYPE=web
     container_name: 'api'
@@ -34,6 +34,7 @@ services:
       - valkey_net
 
   celery-worker:
+    shm_size: '2gb'
     environment:
       - SERVICE_TYPE=celery-worker
     build: .
@@ -46,6 +47,14 @@ services:
     volumes:
       - .:/code
       - media_volume:/code/media
+      # CRITICAL: Save downloaded models so they persist after restart
+      - paddle_cache:/home/app_user/.paddleocr
+      - paddle_x_cache:/home/app_user/.paddlex
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4096M
 
   celery-beat:
     environment:
@@ -67,3 +76,5 @@ volumes:
   valkey_data:
   static_volume:
   media_volume:
+  paddle_cache:
+  paddle_x_cache:

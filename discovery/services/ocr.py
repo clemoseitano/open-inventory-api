@@ -5,14 +5,49 @@ all. In its current state, the system works in 3 steps;
 1. OCR from images
 2. Reconstructing the text layout from the images
 3. Gen AI inference from the text layout"""
-
+import os
 import cv2
 import json
-from paddleocr import PaddleOCR
 import numpy as np
 
+# 1. Define the variable as None initially.
+# This is safe to import anywhere (API, Beat, Worker) because it consumes no memory yet.
+GLOBAL_OCR = None
 
-# A helper class to handle NumPy arrays when creating JSON
+
+def get_ocr_engine():
+    """
+    Singleton accessor for PaddleOCR.
+    Initializes the model ONLY if it hasn't been created yet.
+    """
+    global GLOBAL_OCR
+
+    # 2. Check if it's already loaded
+    if GLOBAL_OCR is None:
+        print("Initializing PaddleOCR model (First Run)...")
+
+        # Optional: Safety check to prevent accidental loading in API container
+        # If you run a script locally, 'SERVICE_TYPE' might be None, so we allow that too.
+        service_type = os.environ.get("SERVICE_TYPE", "local")
+        if service_type not in ["celery-worker", "local"]:
+            raise RuntimeError(f"Attempting to load OCR in unauthorized service: {service_type}")
+
+        # Limit threads to prevent memory explosion
+        from paddleocr import PaddleOCR  # Import inside to avoid top-level dependency issues
+
+        # Initialize ONCE
+        GLOBAL_OCR = PaddleOCR(
+            use_textline_orientation=True,
+            lang="en",
+            ocr_version='PP-OCRv4',  # Explicitly use v4
+            det_model_dir=None,  # Let it download the default (Mobile)
+            rec_model_dir=None,
+            cls_model_dir=None
+        )
+
+    return GLOBAL_OCR
+
+
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
@@ -25,57 +60,43 @@ class NpEncoder(json.JSONEncoder):
 
 
 def process_image_with_ocr(images: list[str]):
-    # Initialize OCR - use the recommended `use_textline_orientation` parameter
-    ocr = PaddleOCR(use_textline_orientation=True, lang="en")
+    # 3. Get the global instance.
+    # If this is the first task, it loads the model.
+    # If this is the 100th task, it returns the existing model instantly.
+    ocr_engine = get_ocr_engine()
 
-    # This list will hold the distilled data for all processed images
     all_images_data = []
     rec_texts_and_score_data = {"rec_texts": [], "rec_scores": []}
     structured_data = []
     raw_ocr_output = []
 
     for image_path in images:
-        # Load image
         img = cv2.imread(image_path)
         if img is None:
             print(f"Warning: Could not read image at {image_path}. Skipping.")
             continue
 
-        # Run OCR using the recommended 'predict' method
-        results = ocr.predict(img)
+        # 4. Use the singleton instance
+        results = ocr_engine.predict(img)
 
-        # A list to store structured data for the current image
-
-        # Check if results were returned
         if results and results[0]:
             raw_ocr_output.append(results)
-            # print(len(results))
-            # for i in results:
-            #     print(i)
-            # The main data is in the first element of the results list
             ocr_output = results[0]
 
-            # Extract the parallel lists of data
             texts = ocr_output.get("rec_texts", [])
             scores = ocr_output.get("rec_scores", [])
             polygons = ocr_output.get("rec_polys", [])
             rec_texts_and_score_data["rec_texts"].extend(texts)
             rec_texts_and_score_data["rec_scores"].extend(scores)
 
-            # Iterate through the recognized texts and their associated data
             for i in range(len(texts)):
                 text = texts[i]
                 confidence = scores[i]
                 bounding_box = polygons[i]
 
-                # Estimate font size from the height of the bounding box
-                # This is an approximation. Bounding box is [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
-                box_height = max(bounding_box[2][1], bounding_box[3][1]) - min(
-                    bounding_box[0][1], bounding_box[1][1]
-                )
-
-                # You could sample the color here using the bounding_box and the original `img`
-                # For simplicity, we'll leave it out, but this is where you'd do it.
+                # Calculate box height safely
+                y_coords = [p[1] for p in bounding_box]
+                box_height = max(y_coords) - min(y_coords)
 
                 structured_entry = {
                     "text": text,
