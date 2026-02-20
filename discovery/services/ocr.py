@@ -5,6 +5,7 @@ all. In its current state, the system works in 3 steps;
 1. OCR from images
 2. Reconstructing the text layout from the images
 3. Gen AI inference from the text layout"""
+
 import os
 import cv2
 import json
@@ -30,19 +31,23 @@ def get_ocr_engine():
         # If you run a script locally, 'SERVICE_TYPE' might be None, so we allow that too.
         service_type = os.environ.get("SERVICE_TYPE", "local")
         if service_type not in ["celery-worker", "local"]:
-            raise RuntimeError(f"Attempting to load OCR in unauthorized service: {service_type}")
+            raise RuntimeError(
+                f"Attempting to load OCR in unauthorized service: {service_type}"
+            )
 
         # Limit threads to prevent memory explosion
-        from paddleocr import PaddleOCR  # Import inside to avoid top-level dependency issues
+        from paddleocr import (
+            PaddleOCR,
+        )  # Import inside to avoid top-level dependency issues
 
         # Initialize ONCE
         GLOBAL_OCR = PaddleOCR(
             use_textline_orientation=True,
             lang="en",
-            ocr_version='PP-OCRv4',  # Explicitly use v4
+            ocr_version="PP-OCRv4",  # Explicitly use v4
             det_model_dir=None,  # Let it download the default (Mobile)
             rec_model_dir=None,
-            cls_model_dir=None
+            cls_model_dir=None,
         )
 
     return GLOBAL_OCR
@@ -60,6 +65,7 @@ class NpEncoder(json.JSONEncoder):
 
 
 def process_image_with_ocr(images: list[str]):
+    print(f"Processing images with OCR... {images}")
     # 3. Get the global instance.
     # If this is the first task, it loads the model.
     # If this is the 100th task, it returns the existing model instantly.

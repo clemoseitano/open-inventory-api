@@ -190,6 +190,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "discovery/static/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# Sync Settings
+TENANT_DB_ROOT = os.path.join(BASE_DIR, "tenant_databases")
+SQL_TEMPLATE_PATH = os.path.join(BASE_DIR, "discovery", "sql", "inventory_0001.sql")
+
 VERSION = "openinventory-0.1"
 
 # Default primary key field type

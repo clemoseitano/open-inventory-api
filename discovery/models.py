@@ -1,9 +1,6 @@
 import random
-import time
-
 from django.db import models
-import uuid
-
+from django.contrib.auth.models import User
 from discovery.utils import id_generator
 
 
@@ -31,11 +28,59 @@ class BaseModel(models.Model):
         ordering = ["-created_at"]
 
 
-class AdminConfiguration(BaseModel):
-    """
-    This class is for storing configurable values
-    """
+class Tenant(BaseModel):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    owner = models.ForeignKey(
+        User, related_name="owned_tenants", on_delete=models.CASCADE
+    )
 
+    def __str__(self):
+        return self.name
+
+
+class TenantMember(BaseModel):
+    ROLE_CHOICES = [("admin", "Admin"), ("staff", "Staff")]
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="tenant_memberships"
+    )
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="members")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="staff")
+
+    class Meta:
+        unique_together = ("user", "tenant")
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role}) @ {self.tenant.name}"
+
+
+class SyncPushLog(BaseModel):
+    """Temporary storage for raw incoming batches. Purgeable."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    tenant_member = models.ForeignKey(TenantMember, on_delete=models.CASCADE)
+    data = models.JSONField()
+
+
+class SyncJournal(BaseModel):
+    """The sequenced stream of finalized actions for pulls."""
+
+    tenant = models.ForeignKey(
+        Tenant, on_delete=models.CASCADE, related_name="sync_journal"
+    )
+    tenant_member = models.ForeignKey(TenantMember, on_delete=models.CASCADE)
+    action_id = models.CharField(max_length=255, unique=True)
+    action_type = models.CharField(max_length=50)
+    payload = models.JSONField()
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.action_type} @ {self.created_at}"
+
+
+class AdminConfiguration(BaseModel):
     key = models.CharField(max_length=64)
     value = models.CharField(max_length=128)
     type = models.CharField(max_length=64)
@@ -65,30 +110,11 @@ class ProductMetadata(BaseModel):
         null=True, blank=True, default=None
     )
     size = models.CharField(max_length=50, null=True, blank=True, default=None)
-    part_number = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        default=None,
-        help_text="Part number of the product, OEM or aftermarket. Stored as text to support alphanumeric values.",
-    )
-    age_rating = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        default=None,
-        help_text="Age rating of the product (e.g., 18 for 18+).",
-    )
-    additional_info = models.JSONField(
-        default=dict,
-        null=True,
-        blank=True,
-        help_text="A dictionary for any other relevant metadata.",
-    )
+    part_number = models.CharField(max_length=100, null=True, blank=True, default=None)
+    age_rating = models.PositiveIntegerField(null=True, blank=True, default=None)
+    additional_info = models.JSONField(default=dict, null=True, blank=True)
     country_of_origin = models.TextField(null=True, blank=True, default=None)
     ingredients = models.JSONField(default=list, null=True, blank=True)
     materials = models.JSONField(default=list, null=True, blank=True)
     warnings = models.JSONField(default=list, null=True, blank=True)
     usage_directions = models.TextField(null=True, blank=True, default=None)
-
-    def __str__(self):
-        return f"Metadata for {self.product.name}"

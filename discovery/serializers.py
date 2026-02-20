@@ -1,7 +1,7 @@
+import json
 from django.contrib.auth.models import User
 from rest_framework import serializers
-
-from discovery.models import Product, ProductMetadata
+from discovery.models import Product, ProductMetadata, SyncJournal, Tenant
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -12,7 +12,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            # use the email so that we can log in with the email address without any changes
             username=validated_data["email"],
             email=validated_data["email"],
             password=validated_data["password"],
@@ -29,15 +28,34 @@ class LoginSerializer(serializers.ModelSerializer):
         fields = ("email", "first_name", "last_name")
 
 
-class ProductMetadataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductMetadata
-        exclude = ["product"]
-
-
 class ProductSerializer(serializers.ModelSerializer):
-    metadata = ProductMetadataSerializer()
-
     class Meta:
         model = Product
         fields = "__all__"
+
+
+class SyncActionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    actionType = serializers.CharField()
+    payload = serializers.JSONField()
+    createdAt = serializers.CharField(required=False)
+
+
+class SyncJournalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SyncJournal
+        fields = ("action_id", "action_type", "payload", "created_at")
+
+    def to_representation(self, instance):
+        payload = instance.payload
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except:
+                pass
+        return {
+            "id": instance.action_id,
+            "actionType": instance.action_type,
+            "payload": payload,
+            "createdAt": instance.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
